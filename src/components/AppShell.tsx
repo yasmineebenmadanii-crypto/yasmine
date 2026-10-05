@@ -5,6 +5,7 @@ import {
   Lightbulb,
   Settings,
   MessageSquare,
+  Sparkles,
 } from "lucide-react";
 import { type ReactNode } from "react";
 import { useI18n, LANGS } from "@/lib/i18n";
@@ -17,7 +18,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
 
   const navItems = [
     { to: "/home", icon: Home, label: t("home") },
-    { to: "/analyze", icon: AppLogo, label: t("analyzeNow") },
+    { to: "/analyze", icon: Sparkles, label: t("analyzeNow") },
     { to: "/reports", icon: BarChart3, label: t("reports") },
     { to: "/recommendations", icon: Lightbulb, label: t("recommendations") },
     { to: "/chat", icon: MessageSquare, label: ar ? "المساعد الذكي" : "Smart AI" },

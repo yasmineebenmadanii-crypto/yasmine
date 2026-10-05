@@ -185,7 +185,7 @@ export function generateMockAnalysis(
 
   // --- DYNAMIC TIMELINE GENERATION WITH PSEUDO-RANDOM UNIQUE SALT ---
   const seedString = campaignName + budget + type;
-  const hash = seedString.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) % 15;
+  const hash = seedString.split("").reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) % 15;
 
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const timeline = days.map((day, idx) => {

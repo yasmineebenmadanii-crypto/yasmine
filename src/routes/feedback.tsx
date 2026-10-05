@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, MessageSquare, ArrowLeft, Heart, Award, Sparkles } from "lucide-react";
 import { z } from "zod";
 import { useI18n } from "@/lib/i18n";
+import { AppLogo } from "@/components/AppLogo";
 
 const searchSchema = z.object({
   campaignId: z.string().optional(),
@@ -117,9 +118,7 @@ function FeedbackPage() {
       {/* Header / Language switcher */}
       <div className="max-w-xl w-full mx-auto flex justify-between items-center mb-8 relative z-10">
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-500 flex items-center justify-center text-white font-black shadow-lg">
-            PI
-          </div>
+          <AppLogo className="h-9 w-9" />
           <div>
             <span className="font-bold text-sm tracking-tight text-white block">Public Insight</span>
             <span className="text-[10px] text-indigo-400 font-semibold block uppercase tracking-wider">{L("Public Feedback", "رأي الجمهور العام")}</span>

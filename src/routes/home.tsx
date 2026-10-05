@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
+import { AppLogo } from "@/components/AppLogo";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -93,6 +94,9 @@ function Home() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-10 pt-6"
       >
+        <div className="flex justify-center mb-4">
+          <AppLogo className="h-16 w-16" />
+        </div>
         <h1 className="text-4xl md:text-5xl font-display font-bold text-gradient mb-3">
           Public Insight
         </h1>
@@ -227,7 +231,7 @@ function Home() {
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="glass-card p-6 md:col-span-2 md:row-span-2 flex flex-col justify-between"
+          className="glass-card p-6 md:col-span-2 flex flex-col justify-between"
         >
           <div>
             <div className="flex items-center gap-3 mb-5">
@@ -235,11 +239,8 @@ function Home() {
                 <Sparkles className="h-5 w-5 text-primary-foreground" />
               </div>
               <div>
-                <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                <div className="font-display font-bold text-base">
                   ⭐ {ar ? "ما يميزنا" : "What Makes Us Unique"}
-                </div>
-                <div className="font-display font-bold">
-                  {ar ? "الذكاء والتأثير الإيجابي" : "Our Ultimate Value"}
                 </div>
               </div>
             </div>
@@ -275,11 +276,6 @@ function Home() {
           </div>
         </motion.div>
 
-        <Stat label={t("stat_avgScore")} value="84" suffix="/100" />
-        <Stat label={t("stat_engagement")} value="+38%" />
-        <Stat label={t("stat_campaigns")} value="1.2k" />
-        <Stat label={t("stat_aiInsights")} value="∞" />
-
         <Link
           to="/faq"
           className="glass-card p-6 md:col-span-3 hover:border-primary/50 transition group flex items-center justify-between"
@@ -311,22 +307,5 @@ function Home() {
         </Link>
       </div>
     </AppShell>
-  );
-}
-
-function Stat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="glass-card p-5"
-    >
-      <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{label}</div>
-      <div className="font-display font-bold text-3xl text-gradient">
-        {value}
-        <span className="text-base text-muted-foreground">{suffix}</span>
-      </div>
-    </motion.div>
   );
 }

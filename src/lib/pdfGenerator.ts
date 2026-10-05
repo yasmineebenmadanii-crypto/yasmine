@@ -707,7 +707,7 @@ export async function exportCampaignToPDF(record: any, lang: "ar" | "en") {
               <span>${L("Strengths (S)", "نقاط القوة (S)")}</span>
             </h5>
             <ul style="padding: 0; margin: 0; list-style: none;">
-              ${strengthsList.slice(0, 3).map(s => `
+              ${strengthsList.slice(0, 3).map((s: string) => `
                 <li style="font-size: 9.5px; color: #14532d; margin-bottom: 6px; line-height: 1.4; display: flex; align-items: flex-start; gap: 5px;">
                   <span style="color: #22c55e; font-weight: bold;">•</span>
                   <span>${s}</span>
@@ -723,7 +723,7 @@ export async function exportCampaignToPDF(record: any, lang: "ar" | "en") {
               <span>${L("Weaknesses (W)", "نقاط الضعف (W)")}</span>
             </h5>
             <ul style="padding: 0; margin: 0; list-style: none;">
-              ${weaknessesList.slice(0, 3).map(w => `
+              ${weaknessesList.slice(0, 3).map((w: string) => `
                 <li style="font-size: 9.5px; color: #4c0519; margin-bottom: 6px; line-height: 1.4; display: flex; align-items: flex-start; gap: 5px;">
                   <span style="color: #f43f5e; font-weight: bold;">•</span>
                   <span>${w}</span>
@@ -739,7 +739,7 @@ export async function exportCampaignToPDF(record: any, lang: "ar" | "en") {
               <span>${L("Opportunities (O)", "الفرص المتاحة (O)")}</span>
             </h5>
             <ul style="padding: 0; margin: 0; list-style: none;">
-              ${opportunitiesList.slice(0, 3).map(o => `
+              ${opportunitiesList.slice(0, 3).map((o: string) => `
                 <li style="font-size: 9.5px; color: #1e3a8a; margin-bottom: 6px; line-height: 1.4; display: flex; align-items: flex-start; gap: 5px;">
                   <span style="color: #3b82f6; font-weight: bold;">•</span>
                   <span>${o}</span>
@@ -755,7 +755,7 @@ export async function exportCampaignToPDF(record: any, lang: "ar" | "en") {
               <span>${L("Threats (T)", "التهديدات الخارجية (T)")}</span>
             </h5>
             <ul style="padding: 0; margin: 0; list-style: none;">
-              ${threatsList.slice(0, 3).map(t => `
+              ${threatsList.slice(0, 3).map((t: string) => `
                 <li style="font-size: 9.5px; color: #78350f; margin-bottom: 6px; line-height: 1.4; display: flex; align-items: flex-start; gap: 5px;">
                   <span style="color: #f59e0b; font-weight: bold;">•</span>
                   <span>${t}</span>

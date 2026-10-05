@@ -24,7 +24,7 @@ function getGeminiClient(): GoogleGenAI {
 
 async function generateContentWithRetry(params: { contents: any; config?: any }): Promise<any> {
   const ai = getGeminiClient();
-  const modelsToTry = ["gemini-3.5-flash", "gemini-3.1-flash-lite"];
+  const modelsToTry = ["gemini-3.8-flash", "gemini-3.1-flash-lite"];
   let lastError: any = null;
 
   for (const model of modelsToTry) {
