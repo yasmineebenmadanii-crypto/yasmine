@@ -36,6 +36,7 @@ import {
   Award,
   TrendingUp,
   Globe,
+  HeartPulse,
 } from "lucide-react";
 import {
   BarChart as RechartsBarChart,
@@ -60,6 +61,314 @@ export const Route = createFileRoute("/analyze")({
 });
 
 const dayKeys = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+
+function get30DayDates() {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - 30);
+  const formatDate = (d: Date) => d.toISOString().split("T")[0];
+  return { start: formatDate(start), end: formatDate(end) };
+}
+
+function getHealthCampaignPreset(language: string) {
+  const { start, end } = get30DayDates();
+
+  switch (language) {
+    case "ar":
+      return {
+        pre: {
+          name: "صحتك تبدأ منك",
+          type: ["awareness"],
+          organizer: "مديرية الصحة والسكان - ولاية سطيف",
+          description: "حملة توعوية صحية موجهة لشباب ولاية سطيف تهدف إلى تعزيز نمط الحياة الصحي والنشاط البدني والتغذية السليمة والوقاية من الأمراض المزمنة.",
+          objectives: "توعية 100,000 شاب وشابة في سطيف بأهمية الفحوصات الدورية وممارسة الرياضة والحد من التدخين والأغذية الضارة.",
+          age: "18-35",
+          gender: "both",
+          location: "سطيف، الجزائر",
+          education: "جامعي / ثانوي",
+          interests: "صحة عامة، لياقة بدنية، تغذية صحية، رياضة",
+          message: "صحتك تبدأ منك.. كل خطوة صحية اليوم تصنع فرقاً يدوم في مستقبلك!",
+          slogans: "صحتك في يديك، سطيف بصحة أفضل، عيشها بصحة",
+          platforms: ["facebook", "instagram"],
+          durationValue: "30",
+          durationUnit: "days" as const,
+          budget: "100000",
+          contentTypes: ["image", "video", "design"],
+          dialect: "algerian",
+        },
+        post: {
+          name: "صحتك تبدأ منك",
+          type: "حملة توعوية صحية",
+          goal: "توعية صحية",
+          age: "18-35",
+          gender: "الشباب من 18 إلى 35 سنة (ذكور وإناث)",
+          location: "سطيف، الجزائر",
+          start,
+          end,
+          budget: "100,000 دج",
+          platforms: ["facebook", "instagram"],
+          postUrl: "https://facebook.com/health.setif/posts/campaign2026",
+          views: "145000",
+          likes: "9800",
+          comments: "840",
+          shares: "1620",
+          saves: "1150",
+          clicks: "4200",
+          followersBefore: "12500",
+          followersAfter: "18300",
+          topLocation: "سطيف، الجزائر",
+          topAge: "18-35",
+          dialect: "algerian",
+          competitor: "sante-algerie.dz",
+        },
+      };
+
+    case "fr":
+      return {
+        pre: {
+          name: "Votre santé commence par vous (صحتك تبدأ منك)",
+          type: ["awareness"],
+          organizer: "Direction de la Santé et de la Population - Wilaya de Sétif",
+          description: "Campagne de sensibilisation à la santé ciblant les jeunes de la wilaya de Sétif pour encourager un mode de vie sain, l'exercice physique régulier et une alimentation équilibrée.",
+          objectives: "Sensibiliser 100 000 jeunes de Sétif à l'importance de la prévention sanitaire et du dépistage précoce.",
+          age: "18-35",
+          gender: "both",
+          location: "Sétif, Algérie",
+          education: "Universitaire / Secondaire",
+          interests: "Santé publique, fitness, nutrition saine, sport",
+          message: "Votre santé commence par vous.. un petit geste sain chaque jour transforme votre avenir !",
+          slogans: "Votre santé entre vos mains, Sétif en meilleure santé",
+          platforms: ["facebook", "instagram"],
+          durationValue: "30",
+          durationUnit: "days" as const,
+          budget: "100000",
+          contentTypes: ["image", "video", "design"],
+          dialect: "algerian",
+        },
+        post: {
+          name: "Votre santé commence par vous (صحتك تبدأ منك)",
+          type: "Campagne de sensibilisation à la santé",
+          goal: "Sensibilisation à la santé",
+          age: "18-35",
+          gender: "Jeunes de 18 à 35 ans (Hommes et Femmes)",
+          location: "Sétif, Algérie",
+          start,
+          end,
+          budget: "100 000 DZD",
+          platforms: ["facebook", "instagram"],
+          postUrl: "https://facebook.com/health.setif/posts/campaign2026",
+          views: "145000",
+          likes: "9800",
+          comments: "840",
+          shares: "1620",
+          saves: "1150",
+          clicks: "4200",
+          followersBefore: "12500",
+          followersAfter: "18300",
+          topLocation: "Sétif, Algérie",
+          topAge: "18-35",
+          dialect: "algerian",
+          competitor: "sante-algerie.dz",
+        },
+      };
+
+    case "es":
+      return {
+        pre: {
+          name: "Tu salud empieza por ti (صحتك تبدأ منك)",
+          type: ["awareness"],
+          organizer: "Dirección de Salud y Población - Provincia de Sétif",
+          description: "Campaña de concienciación sobre la salud dirigida a los jóvenes de Sétif para promover estilos de vida saludables, ejercicio y nutrición balanceada.",
+          objectives: "Sensibilizar a 100.000 jóvenes en Sétif sobre la prevención de enfermedades y el bienestar integral.",
+          age: "18-35",
+          gender: "both",
+          location: "Sétif, Argelia",
+          education: "Universitario / Secundario",
+          interests: "Salud pública, ejercicio, nutrición, deportes",
+          message: "Tu salud empieza por ti.. ¡un pequeño paso hoy marca una gran diferencia en tu futuro!",
+          slogans: "Tu salud en tus manos, Sétif más saludable",
+          platforms: ["facebook", "instagram"],
+          durationValue: "30",
+          durationUnit: "days" as const,
+          budget: "100000",
+          contentTypes: ["image", "video", "design"],
+          dialect: "algerian",
+        },
+        post: {
+          name: "Tu salud empieza por ti (صحتك تبدأ منك)",
+          type: "Campaña de concienciación sobre la salud",
+          goal: "Concienciación sobre la salud",
+          age: "18-35",
+          gender: "Jóvenes de 18 a 35 años (Todos)",
+          location: "Sétif, Argelia",
+          start,
+          end,
+          budget: "100.000 DZD",
+          platforms: ["facebook", "instagram"],
+          postUrl: "https://facebook.com/health.setif/posts/campaign2026",
+          views: "145000",
+          likes: "9800",
+          comments: "840",
+          shares: "1620",
+          saves: "1150",
+          clicks: "4200",
+          followersBefore: "12500",
+          followersAfter: "18300",
+          topLocation: "Sétif, Argelia",
+          topAge: "18-35",
+          dialect: "algerian",
+          competitor: "sante-algerie.dz",
+        },
+      };
+
+    case "de":
+      return {
+        pre: {
+          name: "Deine Gesundheit beginnt bei dir (صحتك تبدأ منك)",
+          type: ["awareness"],
+          organizer: "Direktion für Gesundheit und Bevölkerung - Provinz Sétif",
+          description: "Gesundheitsaufklärungskampagne für junge Menschen in der Provinz Sétif zur Förderung eines gesunden Lebensstils, regelmäßiger Bewegung und ausgewogener Ernährung.",
+          objectives: "Sensibilisierung von 100.000 Jugendlichen in Sétif für Prävention und Vorsorgeuntersuchungen.",
+          age: "18-35",
+          gender: "both",
+          location: "Sétif, Algerien",
+          education: "Hochschule / Weiterführend",
+          interests: "Öffentliche Gesundheit, Fitness, Ernährung, Sport",
+          message: "Deine Gesundheit beginnt bei dir.. ein kleiner gesunder Schritt heute macht morgen den Unterschied!",
+          slogans: "Deine Gesundheit in deinen Händen, ein gesünderes Sétif",
+          platforms: ["facebook", "instagram"],
+          durationValue: "30",
+          durationUnit: "days" as const,
+          budget: "100000",
+          contentTypes: ["image", "video", "design"],
+          dialect: "algerian",
+        },
+        post: {
+          name: "Deine Gesundheit beginnt bei dir (صحتك تبدأ منك)",
+          type: "Gesundheitsaufklärungskampagne",
+          goal: "Gesundheitsaufklärung",
+          age: "18-35",
+          gender: "Jugendliche von 18 bis 35 Jahren (Alle)",
+          location: "Sétif, Algerien",
+          start,
+          end,
+          budget: "100.000 DZD",
+          platforms: ["facebook", "instagram"],
+          postUrl: "https://facebook.com/health.setif/posts/campaign2026",
+          views: "145000",
+          likes: "9800",
+          comments: "840",
+          shares: "1620",
+          saves: "1150",
+          clicks: "4200",
+          followersBefore: "12500",
+          followersAfter: "18300",
+          topLocation: "Sétif, Algerien",
+          topAge: "18-35",
+          dialect: "algerian",
+          competitor: "sante-algerie.dz",
+        },
+      };
+
+    case "zh":
+      return {
+        pre: {
+          name: "健康始于自身 (صحتك تبدأ منك)",
+          type: ["awareness"],
+          organizer: "阿尔及利亚 塞提夫省卫生与人口理事会",
+          description: "面向塞提夫省青年的健康宣教活动，倡导健康生活方式、经常锻炼和均衡饮食。",
+          objectives: "向塞提夫的10万名青年普及预防保健和健康生活习惯的重要性。",
+          age: "18-35",
+          gender: "both",
+          location: "阿尔及利亚 塞提夫",
+          education: "大学 / 高中",
+          interests: "公共健康、健身、均衡膳食、体育",
+          message: "健康始于自身.. 今天迈出一小步，未来带来长久健康改变！",
+          slogans: "健康掌握在自己手中，塞提夫更健康",
+          platforms: ["facebook", "instagram"],
+          durationValue: "30",
+          durationUnit: "days" as const,
+          budget: "100000",
+          contentTypes: ["image", "video", "design"],
+          dialect: "algerian",
+        },
+        post: {
+          name: "健康始于自身 (صحتك تبدأ منك)",
+          type: "健康宣传倡导活动",
+          goal: "健康倡导",
+          age: "18-35",
+          gender: "18至35岁青年 (男女全体)",
+          location: "阿尔及利亚 塞提夫",
+          start,
+          end,
+          budget: "100,000 DZD",
+          platforms: ["facebook", "instagram"],
+          postUrl: "https://facebook.com/health.setif/posts/campaign2026",
+          views: "145000",
+          likes: "9800",
+          comments: "840",
+          shares: "1620",
+          saves: "1150",
+          clicks: "4200",
+          followersBefore: "12500",
+          followersAfter: "18300",
+          topLocation: "阿尔及利亚 塞提夫",
+          topAge: "18-35",
+          dialect: "algerian",
+          competitor: "sante-algerie.dz",
+        },
+      };
+
+    default: // "en"
+      return {
+        pre: {
+          name: "Your Health Starts with You (صحتك تبدأ منك)",
+          type: ["awareness"],
+          organizer: "Health & Population Directorate - Setif Province",
+          description: "A public health awareness campaign targeting youth in Setif province to promote healthy living, regular exercise, and balanced nutrition.",
+          objectives: "Educate 100,000 youth in Setif about the value of disease prevention and healthy lifestyles.",
+          age: "18-35",
+          gender: "both",
+          location: "Setif, Algeria",
+          education: "University / High School",
+          interests: "Health, fitness, nutrition, sports",
+          message: "Your health starts with you.. a small healthy step today makes a big difference tomorrow!",
+          slogans: "Your Health in Your Hands, Setif Healthier",
+          platforms: ["facebook", "instagram"],
+          durationValue: "30",
+          durationUnit: "days" as const,
+          budget: "100000",
+          contentTypes: ["image", "video", "design"],
+          dialect: "algerian",
+        },
+        post: {
+          name: "Your Health Starts with You (صحتك تبدأ منك)",
+          type: "Health Awareness Campaign",
+          goal: "Health Awareness",
+          age: "18-35",
+          gender: "Youth aged 18 to 35 years (All genders)",
+          location: "Setif, Algeria",
+          start,
+          end,
+          budget: "100,000 DZD",
+          platforms: ["facebook", "instagram"],
+          postUrl: "https://facebook.com/health.setif/posts/campaign2026",
+          views: "145000",
+          likes: "9800",
+          comments: "840",
+          shares: "1620",
+          saves: "1150",
+          clicks: "4200",
+          followersBefore: "12500",
+          followersAfter: "18300",
+          topLocation: "Setif, Algeria",
+          topAge: "18-35",
+          dialect: "algerian",
+          competitor: "sante-algerie.dz",
+        },
+      };
+  }
+}
 
 function Analyze() {
   const { t, lang } = useI18n();
@@ -338,6 +647,42 @@ function Analyze() {
     );
   };
 
+  const [autoFillSuccess, setAutoFillSuccess] = useState<string | null>(null);
+
+  const handleAutoFillPost = () => {
+    const preset = getHealthCampaignPreset(lang).post;
+    setPost(preset);
+    setErrors({});
+    setBannerError(null);
+    setAutoFillSuccess(
+      lang === "ar"
+        ? "تمت تعبئة بيانات الحملة الصحية بنجاح! (صحتك تبدأ منك - سطيف)"
+        : lang === "fr"
+          ? "Données de la campagne « Votre santé commence par vous (Sétif) » renseignées avec succès !"
+          : "Health campaign details ('Your Health Starts with You - Setif') auto-filled successfully!"
+    );
+    setTimeout(() => {
+      setAutoFillSuccess(null);
+    }, 4500);
+  };
+
+  const handleAutoFillPre = () => {
+    const preset = getHealthCampaignPreset(lang).pre;
+    setPre(preset);
+    setErrors({});
+    setBannerError(null);
+    setAutoFillSuccess(
+      lang === "ar"
+        ? "تمت تعبئة بيانات الحملة الصحية بنجاح! (صحتك تبدأ منك - سطيف)"
+        : lang === "fr"
+          ? "Données de la campagne « Votre santé commence par vous (Sétif) » renseignées avec succès !"
+          : "Health campaign details ('Your Health Starts with You - Setif') auto-filled successfully!"
+    );
+    setTimeout(() => {
+      setAutoFillSuccess(null);
+    }, 4500);
+  };
+
   const submitPre = () => {
     const newErrors: Record<string, string> = {};
 
@@ -593,6 +938,51 @@ function Analyze() {
                 )}
               </span>
             </div>
+
+            {/* One-Click Auto-Fill Preset Card for Pre-Launch */}
+            <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-primary/10 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
+                  <HeartPulse className="h-5 w-5 animate-pulse" />
+                </div>
+                <div className="text-start">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="font-bold text-xs text-foreground">
+                      {L("Auto-Fill Health Campaign Preset", "تعبئة تلقائية لبيانات الحملة الصحية")}
+                    </h4>
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                      {lang === "ar" ? "صحتك تبدأ منك" : "Health Campaign (صحتك تبدأ منك)"}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {L(
+                      "Setif, Algeria • 18-35 years • 30 days • 100,000 DZD • Algerian Dialect",
+                      "سطيف، الجزائر • 18-35 سنة • 30 يوماً • 100,000 دج • دارجة وعربية فصحى"
+                    )}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleAutoFillPre}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-md shadow-emerald-500/20 active:scale-95 shrink-0"
+              >
+                <Sparkles className="h-4 w-4" />
+                <span>{L("Auto-Fill Fields", "تعبئة الحقول تلقائياً")}</span>
+              </button>
+            </div>
+
+            {autoFillSuccess && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mb-6 p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 shadow-sm"
+              >
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>{autoFillSuccess}</span>
+              </motion.div>
+            )}
 
             <Section title={L("Campaign basics", "بيانات الحملة")}>
               <Field
@@ -1845,6 +2235,51 @@ function Analyze() {
                   )}
                 </span>
               </div>
+
+              {/* One-Click Auto-Fill Preset Card for Post-Launch */}
+              <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-primary/10 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
+                    <HeartPulse className="h-5 w-5 animate-pulse" />
+                  </div>
+                  <div className="text-start">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-bold text-xs text-foreground">
+                        {L("Auto-Fill Health Campaign Preset", "تعبئة تلقائية لبيانات الحملة الصحية")}
+                      </h4>
+                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                        {lang === "ar" ? "صحتك تبدأ منك" : "Health Campaign (صحتك تبدأ منك)"}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {L(
+                        "Setif, Algeria • 18-35 years • 30 days • 100,000 DZD • Algerian Dialect",
+                        "سطيف، الجزائر • 18-35 سنة • 30 يوماً • 100,000 دج • دارجة وعربية فصحى"
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAutoFillPost}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-md shadow-emerald-500/20 active:scale-95 shrink-0"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>{L("Auto-Fill Fields", "تعبئة الحقول تلقائياً")}</span>
+                </button>
+              </div>
+
+              {autoFillSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="mb-6 p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 shadow-sm"
+                >
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <span>{autoFillSuccess}</span>
+                </motion.div>
+              )}
 
               <div className="flex items-center gap-2 mb-8">
                 {stepLabels.map((label, i) => (
