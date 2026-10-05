@@ -88,6 +88,32 @@ function Analyze() {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrMessage, setOcrMessage] = useState("");
 
+  // Validation state
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [bannerError, setBannerError] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
+
+  // Check if redirected with an error message
+  useEffect(() => {
+    const redirectedMsg = sessionStorage.getItem("pi-form-error");
+    if (redirectedMsg) {
+      setBannerError(redirectedMsg);
+      sessionStorage.removeItem("pi-form-error");
+    }
+  }, []);
+
+  const clearError = (field: string) => {
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+    if (bannerError) {
+      setBannerError(null);
+    }
+  };
+
   // Pre-launch form state
   const [pre, setPre] = useState({
     name: "",
@@ -109,12 +135,17 @@ function Analyze() {
     contentTypes: [] as string[],
     dialect: "standard", // Cultural dialect setting
   });
-  const setP = (k: keyof typeof pre, v: any) => setPre((p) => ({ ...p, [k]: v }));
-  const togglePre = (k: "platforms" | "contentTypes", id: string) =>
+  const setP = (k: keyof typeof pre, v: any) => {
+    clearError(k as string);
+    setPre((p) => ({ ...p, [k]: v }));
+  };
+  const togglePre = (k: "platforms" | "contentTypes", id: string) => {
+    clearError(k);
     setPre((p) => ({
       ...p,
       [k]: p[k].includes(id) ? p[k].filter((x) => x !== id) : [...p[k], id],
     }));
+  };
 
   // Post-launch state
   const [post, setPost] = useState<any>({
@@ -159,16 +190,18 @@ function Analyze() {
   ];
 
   const handleAnalyzeLink = () => {
-    if (!feedbackLink) {
-      alert(L("Please enter a valid feedback link.", "يرجى إدخال رابط تغذية راجعة صالح."));
+    if (!feedbackLink || !feedbackLink.trim()) {
+      setLinkError(L("Feedback survey link is required.", "يرجى إدخال رابط صالح لنموذج أو استبيان التغذية الراجعة."));
       return;
     }
     
     // Simple validation of URL
     if (!feedbackLink.startsWith("http://") && !feedbackLink.startsWith("https://") && !feedbackLink.includes(".")) {
-      alert(L("Please enter a valid URL.", "يرجى إدخال رابط إنترنت صحيح."));
+      setLinkError(L("Please enter a valid URL (e.g. https://forms.google.com/...)", "يرجى إدخال رابط إنترنت صالح يبدأ بـ http:// أو https://."));
       return;
     }
+
+    setLinkError(null);
 
     setLinkAnalysisLoading(true);
     setLinkAnalysisStep(0);
@@ -291,22 +324,175 @@ function Analyze() {
       summaryEn
     };
   };
-  const setPo = (k: string, v: any) => setPost((d: any) => ({ ...d, [k]: v }));
-  const togglePoPlat = (id: string) =>
+  const setPo = (k: string, v: any) => {
+    clearError(k);
+    setPost((d: any) => ({ ...d, [k]: v }));
+  };
+  const togglePoPlat = (id: string) => {
+    clearError("platforms");
     setPo(
       "platforms",
       post.platforms.includes(id)
         ? post.platforms.filter((p: string) => p !== id)
         : [...post.platforms, id],
     );
+  };
 
   const submitPre = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!pre.name || !pre.name.trim()) {
+      newErrors.name = L("Campaign name is required", "اسم الحملة إلزامي");
+    }
+    if (!pre.type || pre.type.length === 0) {
+      newErrors.type = L("Please select at least one campaign type", "يرجى تحديد نوع حملة واحد على الأقل");
+    }
+    if (!pre.description || !pre.description.trim()) {
+      newErrors.description = L("Campaign description is required", "وصف الحملة إلزامي لتمكين الذكاء الاصطناعي من فهم محتواها");
+    }
+    if (!pre.objectives || !pre.objectives.trim()) {
+      newErrors.objectives = L("Campaign objectives are required", "أهداف الحملة إلزامية لتحديد معايير النجاح");
+    }
+    if (!pre.location || !pre.location.trim()) {
+      newErrors.location = L("Target location is required", "الموقع الجغرافي المستهدف إلزامي");
+    }
+    if (!pre.message || !pre.message.trim()) {
+      newErrors.message = L("Main campaign message is required", "الرسالة الرئيسية للحملة إلزامية لتحليل الأثر والتفاعل");
+    }
+    if (!pre.platforms || pre.platforms.length === 0) {
+      newErrors.platforms = L("Please select at least one target platform", "يرجى اختيار منصة تواصل واحدة على الأقل");
+    }
+    if (!pre.durationValue || !String(pre.durationValue).trim() || Number(pre.durationValue) <= 0) {
+      newErrors.durationValue = L("Valid duration is required", "يرجى إدخال مدة حملة صالحة (أكبر من صفر)");
+    }
+    if (!pre.budget || !pre.budget.trim()) {
+      newErrors.budget = L("Campaign budget is required", "الميزانية المتاحة إلزامية لتقييم الجدوى والتوافق");
+    }
+    if (!pre.contentTypes || pre.contentTypes.length === 0) {
+      newErrors.contentTypes = L("Please select at least one content format", "يرجى اختيار نوع محتوى واحد على الأقل");
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setBannerError(
+        L(
+          "Please fill in all required fields marked with an asterisk (*) before running the analysis.",
+          "يرجى ملء جميع الحقول الإلزامية المحددة بعلامة (*) قبل إرسال الحملة للتحليل بالذكاء الاصطناعي."
+        )
+      );
+
+      // Smoothly scroll to first invalid field
+      const firstKey = Object.keys(newErrors)[0];
+      const el = document.getElementById(`field-${firstKey}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        const inputEl = el.querySelector("input, textarea, button") as HTMLElement | null;
+        inputEl?.focus?.();
+      }
+      return;
+    }
+
+    setBannerError(null);
+    setErrors({});
     sessionStorage.setItem("pi-campaignMode", "pre");
     sessionStorage.setItem("pi-campaign", JSON.stringify(pre));
     sessionStorage.setItem("pi-current-run-id", `run_${Date.now()}`);
     nav({ to: "/analyzing" });
   };
+
+  const handleNextPostStep = () => {
+    if (postStep === 0) {
+      const stepErrors: Record<string, string> = {};
+      if (!post.name || !post.name.trim()) {
+        stepErrors.name = L("Campaign name is required", "اسم الحملة إلزامي");
+      }
+      if (!post.location || !post.location.trim()) {
+        stepErrors.location = L("Target location is required", "الموقع الجغرافي المستهدف إلزامي");
+      }
+      if (!post.start) {
+        stepErrors.start = L("Start date is required", "تاريخ بدء الحملة إلزامي");
+      }
+      if (!post.end) {
+        stepErrors.end = L("End date is required", "تاريخ انتهاء الحملة إلزامي");
+      }
+      if (post.start && post.end && post.start > post.end) {
+        stepErrors.end = L("End date cannot precede start date", "تاريخ الانتهاء لا يمكن أن يسبق تاريخ البدء");
+      }
+
+      if (Object.keys(stepErrors).length > 0) {
+        setErrors(stepErrors);
+        setBannerError(
+          L(
+            "Please fill in all required fields marked with (*) to proceed.",
+            "يرجى إكمال البيانات الأساسية الإلزامية المحددة بـ (*) للمتابعة."
+          )
+        );
+        const firstKey = Object.keys(stepErrors)[0];
+        const el = document.getElementById(`field-post-${firstKey}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          const inputEl = el.querySelector("input") as HTMLElement | null;
+          inputEl?.focus?.();
+        }
+        return;
+      }
+    } else if (postStep === 1) {
+      const stepErrors: Record<string, string> = {};
+      if (!post.platforms || post.platforms.length === 0) {
+        stepErrors.platforms = L("Please select at least one active platform", "يرجى تحديد منصة واحدة على الأقل تم نشر الحملة عليها");
+      }
+
+      if (Object.keys(stepErrors).length > 0) {
+        setErrors(stepErrors);
+        setBannerError(
+          L(
+            "Please select at least one platform where your campaign was launched.",
+            "يرجى تحديد منصة واحدة على الأقل أطلقت عليها الحملة."
+          )
+        );
+        const el = document.getElementById("field-post-platforms");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+        return;
+      }
+    }
+
+    setBannerError(null);
+    setErrors({});
+    setPostStep((p) => p + 1);
+  };
+
   const submitPost = () => {
+    const metricErrors: Record<string, string> = {};
+    if (!post.views || !String(post.views).trim()) {
+      metricErrors.views = L(
+        "Views count is required to calculate conversion and engagement metrics",
+        "عدد المشاهدات إلزامي لحساب معدلات التفاعل والتحويل"
+      );
+    } else if (isNaN(Number(String(post.views).replace(/,/g, "")))) {
+      metricErrors.views = L("Please enter a valid numeric views count", "يرجى إدخال رقم صحيح لعدد المشاهدات");
+    }
+
+    if (Object.keys(metricErrors).length > 0) {
+      setErrors(metricErrors);
+      setBannerError(
+        L(
+          "Please enter at least the total views before submitting metrics for analysis.",
+          "يرجى إدخال إجمالي المشاهدات على الأقل لتمكين الذكاء الاصطناعي من تحليل النتائج."
+        )
+      );
+      const el = document.getElementById("field-post-views");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        const inputEl = el.querySelector("input") as HTMLElement | null;
+        inputEl?.focus?.();
+      }
+      return;
+    }
+
+    setBannerError(null);
+    setErrors({});
     sessionStorage.setItem("pi-campaignMode", "post");
     sessionStorage.setItem("pi-campaign", JSON.stringify(post));
     sessionStorage.setItem("pi-current-run-id", `run_${Date.now()}`);
@@ -380,20 +566,47 @@ function Analyze() {
             <h1 className="text-3xl font-display font-bold mb-2">
               {L("Pre-launch campaign analysis", "تحليل الحملة قبل الإطلاق")}
             </h1>
-            <p className="text-sm text-muted-foreground mb-6">
+            <p className="text-sm text-muted-foreground mb-4">
               {L(
                 "Fill in the campaign details to generate a full pre-launch report.",
                 "املأ تفاصيل الحملة لإنشاء تقرير تحليلي كامل قبل الإطلاق.",
               )}
             </p>
 
+            {bannerError && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 p-4 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive text-xs font-semibold flex items-start gap-2.5 shadow-sm"
+              >
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
+                <div className="flex-1 leading-relaxed">{bannerError}</div>
+              </motion.div>
+            )}
+
+            <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-muted/50 border border-border/70 text-xs text-muted-foreground mb-6">
+              <span className="text-destructive font-black text-sm">*</span>
+              <span>
+                {L(
+                  "Fields marked with an asterisk (*) are required to run an accurate AI campaign analysis.",
+                  "الحقول المعلمة بالنجمة (*) إلزامية لتمكين الذكاء الاصطناعي من تحليل الحملة بدقة."
+                )}
+              </span>
+            </div>
+
             <Section title={L("Campaign basics", "بيانات الحملة")}>
-              <Field label={L("Campaign name", "اسم الحملة")}>
+              <Field
+                label={L("Campaign name", "اسم الحملة")}
+                required
+                error={errors.name}
+                id="field-name"
+              >
                 <input
+                  id="input-name"
                   value={pre.name}
                   onChange={(e) => setP("name", e.target.value)}
-                  className={inputCls}
-                  placeholder={L("Campaign name", "اسم الحملة")}
+                  className={`${inputCls} ${errors.name ? "border-destructive ring-2 ring-destructive/20 focus:border-destructive" : ""}`}
+                  placeholder={L("e.g. Health Awareness 2026", "مثال: الحملة الوطنية للصحة الرقمية 2026")}
                 />
               </Field>
 
@@ -659,8 +872,17 @@ function Analyze() {
                 </AnimatePresence>
               </div>
 
-              <Field label={L("Campaign Type (Multi-select)", "نوع الحملة (تحديد متعدد)")}>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <Field
+                label={L("Campaign Type (Multi-select)", "نوع الحملة (تحديد متعدد)")}
+                required
+                error={errors.type}
+                id="field-type"
+              >
+                <div
+                  className={`grid grid-cols-2 sm:grid-cols-3 gap-2 p-1 rounded-xl transition ${
+                    errors.type ? "border border-destructive/80 ring-2 ring-destructive/20" : ""
+                  }`}
+                >
                   {typeOptions.map((o) => {
                     const isSelected = pre.type.includes(o.id);
                     return (
@@ -671,7 +893,7 @@ function Analyze() {
                           const updated = pre.type.includes(o.id)
                             ? pre.type.filter((t) => t !== o.id)
                             : [...pre.type, o.id];
-                          setP("type", updated.length > 0 ? updated : [o.id]);
+                          setP("type", updated);
                         }}
                       >
                         {o.label}
@@ -680,37 +902,47 @@ function Analyze() {
                   })}
                 </div>
               </Field>
-              <Field label={L("Organizing entity", "الجهة المنظمة")}>
+              <Field label={L("Organizing entity (optional)", "الجهة المنظمة (اختياري)")}>
                 <input
                   value={pre.organizer}
                   onChange={(e) => setP("organizer", e.target.value)}
                   className={inputCls}
-                  placeholder={L("Institution name", "اسم المؤسسة")}
+                  placeholder={L("Institution name", "اسم المؤسسة أو الشركة")}
                 />
               </Field>
-              <Field label={L("Campaign description", "وصف الحملة")}>
+              <Field
+                label={L("Campaign description", "وصف الحملة")}
+                required
+                error={errors.description}
+                id="field-description"
+              >
                 <textarea
                   rows={3}
                   value={pre.description}
                   onChange={(e) => setP("description", e.target.value)}
-                  className={inputCls}
-                  placeholder={L("Brief description", "وصف مختصر")}
+                  className={`${inputCls} ${errors.description ? "border-destructive ring-2 ring-destructive/20 focus:border-destructive" : ""}`}
+                  placeholder={L("Describe the campaign idea and context...", "اشرح فكرة وموضوع وسياق الحملة الإعلانية...")}
                 />
               </Field>
-              <Field label={L("Campaign objectives", "أهداف الحملة")}>
+              <Field
+                label={L("Campaign objectives", "أهداف الحملة")}
+                required
+                error={errors.objectives}
+                id="field-objectives"
+              >
                 <textarea
                   rows={3}
                   value={pre.objectives}
                   onChange={(e) => setP("objectives", e.target.value)}
-                  className={inputCls}
-                  placeholder={L("List the main objectives", "اذكر الأهداف الرئيسية")}
+                  className={`${inputCls} ${errors.objectives ? "border-destructive ring-2 ring-destructive/20 focus:border-destructive" : ""}`}
+                  placeholder={L("List the main objectives (e.g. increase public awareness by 30%)", "اذكر الأهداف الرئيسية المرجوة من الحملة")}
                 />
               </Field>
             </Section>
 
             <Section title={L("Target audience", "الجمهور المستهدف")}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label={L("Age range", "الفئة العمرية")}>
+                <Field label={L("Age range (optional)", "الفئة العمرية (اختياري)")}>
                   <input
                     value={pre.age}
                     onChange={(e) => setP("age", e.target.value)}
@@ -735,15 +967,21 @@ function Analyze() {
                     ))}
                   </div>
                 </Field>
-                <Field label={L("Location", "الموقع الجغرافي")}>
+                <Field
+                  label={L("Target location", "الموقع الجغرافي المستهدف")}
+                  required
+                  error={errors.location}
+                  id="field-location"
+                >
                   <input
+                    id="input-location"
                     value={pre.location}
                     onChange={(e) => setP("location", e.target.value)}
-                    className={inputCls}
-                    placeholder={L("Region / city", "المنطقة / المدينة")}
+                    className={`${inputCls} ${errors.location ? "border-destructive ring-2 ring-destructive/20 focus:border-destructive" : ""}`}
+                    placeholder={L("Region / city (e.g. Algiers, Oran, National)", "المنطقة / المدينة (مثال: الجزائر العاصمة، وهران، وطني)")}
                   />
                 </Field>
-                <Field label={L("Education level", "المستوى التعليمي")}>
+                <Field label={L("Education level (optional)", "المستوى التعليمي (اختياري)")}>
                   <input
                     value={pre.education}
                     onChange={(e) => setP("education", e.target.value)}
@@ -751,7 +989,7 @@ function Analyze() {
                     placeholder={L("e.g. University", "مثال: جامعي")}
                   />
                 </Field>
-                <Field label={L("Interests", "الاهتمامات")}>
+                <Field label={L("Interests (optional)", "الاهتمامات (اختياري)")}>
                   <input
                     value={pre.interests}
                     onChange={(e) => setP("interests", e.target.value)}
@@ -783,19 +1021,25 @@ function Analyze() {
             </Section>
 
             <Section title={L("Message & slogans", "الرسالة والشعارات")}>
-              <Field label={L("Main message", "الرسالة الرئيسية للحملة")}>
+              <Field
+                label={L("Main campaign message", "الرسالة الرئيسية للحملة")}
+                required
+                error={errors.message}
+                id="field-message"
+              >
                 <textarea
+                  id="input-message"
                   rows={3}
                   value={pre.message}
                   onChange={(e) => setP("message", e.target.value)}
-                  className={inputCls}
-                  placeholder={L("The main message", "الرسالة الرئيسية")}
+                  className={`${inputCls} ${errors.message ? "border-destructive ring-2 ring-destructive/20 focus:border-destructive" : ""}`}
+                  placeholder={L("The core message or slogan conveyed to the audience", "الرسالة الجوهرية الموجهة للجمهور المستهدف")}
                 />
                 <div className="mt-1 text-xs text-muted-foreground text-end">
                   {pre.message.length} / 240
                 </div>
               </Field>
-              <Field label={L("Slogans used", "الشعارات المستخدمة")}>
+              <Field label={L("Slogans used (optional)", "الشعارات المستخدمة (اختياري)")}>
                 <input
                   value={pre.slogans}
                   onChange={(e) => setP("slogans", e.target.value)}
@@ -806,17 +1050,26 @@ function Analyze() {
             </Section>
 
             <Section title={L("Channels, duration & budget", "المنصات والمدة والميزانية")}>
-              <Field label={L("Target platforms", "المنصات المستهدفة")}>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <Field
+                label={L("Target platforms", "المنصات المستهدفة")}
+                required
+                error={errors.platforms}
+                id="field-platforms"
+              >
+                <div
+                  className={`grid grid-cols-2 sm:grid-cols-3 gap-2 p-1 rounded-xl transition ${
+                    errors.platforms ? "border border-destructive/80 ring-2 ring-destructive/20" : ""
+                  }`}
+                >
                   {platformOptions.map(({ id, label, Icon }) => (
                     <button
                       key={id}
                       type="button"
                       onClick={() => togglePre("platforms", id)}
-                      className={`p-3 rounded-xl border flex items-center justify-center gap-2 text-sm transition ${
+                      className={`p-3 rounded-xl border flex items-center justify-center gap-2 text-sm transition cursor-pointer ${
                         pre.platforms.includes(id)
                           ? "bg-primary/15 border-primary"
-                          : "bg-surface border-border"
+                          : "bg-surface border-border hover:border-primary/50"
                       }`}
                     >
                       <Icon className="h-4 w-4" /> {label}
@@ -825,14 +1078,20 @@ function Analyze() {
                 </div>
               </Field>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label={L("Campaign duration", "مدة الحملة")}>
+                <Field
+                  label={L("Campaign duration", "مدة الحملة")}
+                  required
+                  error={errors.durationValue}
+                  id="field-durationValue"
+                >
                   <div className="flex gap-2">
                     <input
+                      id="input-durationValue"
                       type="number"
                       min={1}
                       value={pre.durationValue}
                       onChange={(e) => setP("durationValue", e.target.value)}
-                      className={inputCls}
+                      className={`${inputCls} ${errors.durationValue ? "border-destructive ring-2 ring-destructive/20 focus:border-destructive" : ""}`}
                       placeholder="0"
                     />
                     <div className="flex gap-1">
@@ -844,7 +1103,7 @@ function Analyze() {
                           key={u.id}
                           type="button"
                           onClick={() => setP("durationUnit", u.id as any)}
-                          className={`px-3 rounded-xl text-xs border ${pre.durationUnit === u.id ? "bg-primary/15 border-primary" : "bg-surface border-border"}`}
+                          className={`px-3 rounded-xl text-xs border cursor-pointer ${pre.durationUnit === u.id ? "bg-primary/15 border-primary" : "bg-surface border-border hover:border-primary/40"}`}
                         >
                           {u.label}
                         </button>
@@ -852,12 +1111,18 @@ function Analyze() {
                     </div>
                   </div>
                 </Field>
-                <Field label={L("Available budget", "الميزانية المتاحة")}>
+                <Field
+                  label={L("Available budget ($)", "الميزانية المتاحة ($)")}
+                  required
+                  error={errors.budget}
+                  id="field-budget"
+                >
                   <input
+                    id="input-budget"
                     value={pre.budget}
                     onChange={(e) => setP("budget", e.target.value)}
-                    className={inputCls}
-                    placeholder="$"
+                    className={`${inputCls} ${errors.budget ? "border-destructive ring-2 ring-destructive/20 focus:border-destructive" : ""}`}
+                    placeholder="e.g. 1500"
                   />
                 </Field>
               </div>
@@ -971,27 +1236,49 @@ function Analyze() {
             </Section>
 
             <Section title={L("Proposed content", "المحتوى المقترح للحملة")}>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {contentOptions.map(({ id, label, Icon }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => togglePre("contentTypes", id)}
-                    className={`p-4 rounded-xl border flex flex-col items-center gap-2 text-sm transition ${
-                      pre.contentTypes.includes(id)
-                        ? "bg-primary/15 border-primary"
-                        : "bg-surface border-border"
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" /> {label}
-                  </button>
-                ))}
-              </div>
+              <Field
+                label={L("Proposed content formats", "أنواع المحتوى المقترح")}
+                required
+                error={errors.contentTypes}
+                id="field-contentTypes"
+              >
+                <div
+                  className={`grid grid-cols-2 sm:grid-cols-4 gap-2 p-1 rounded-xl transition ${
+                    errors.contentTypes ? "border border-destructive/80 ring-2 ring-destructive/20" : ""
+                  }`}
+                >
+                  {contentOptions.map(({ id, label, Icon }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => togglePre("contentTypes", id)}
+                      className={`p-4 rounded-xl border flex flex-col items-center gap-2 text-sm transition cursor-pointer ${
+                        pre.contentTypes.includes(id)
+                          ? "bg-primary/15 border-primary"
+                          : "bg-surface border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" /> {label}
+                    </button>
+                  ))}
+                </div>
+              </Field>
             </Section>
+
+            {bannerError && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-6 p-4 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive text-xs font-semibold flex items-start gap-2.5 shadow-sm"
+              >
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
+                <div className="flex-1 leading-relaxed">{bannerError}</div>
+              </motion.div>
+            )}
 
             <button
               onClick={submitPre}
-              className="w-full mt-8 gradient-primary text-primary-foreground py-4 rounded-2xl font-semibold glow-ring flex items-center justify-center gap-2"
+              className="w-full mt-6 gradient-primary text-primary-foreground py-4 rounded-2xl font-semibold glow-ring flex items-center justify-center gap-2 cursor-pointer hover:opacity-95 shadow-lg transition"
             >
               {t("submit")} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
             </button>
@@ -1094,17 +1381,34 @@ function Analyze() {
                   </div>
 
                   <div className="w-full max-w-md space-y-3">
-                    <div className="relative">
+                    <div className="relative text-start">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground/50">
                         <Globe className="h-4 w-4" />
                       </div>
                       <input
                         type="url"
                         value={feedbackLink}
-                        onChange={(e) => setFeedbackLink(e.target.value)}
+                        onChange={(e) => {
+                          setFeedbackLink(e.target.value);
+                          if (linkError) setLinkError(null);
+                        }}
                         placeholder={L("https://docs.google.com/forms/d/...", "https://docs.google.com/forms/d/...")}
-                        className="w-full bg-surface border border-border rounded-xl pl-10 pr-4 py-3.5 text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition"
+                        className={`w-full bg-surface border rounded-xl pl-10 pr-4 py-3.5 text-xs focus:outline-none transition ${
+                          linkError
+                            ? "border-destructive ring-2 ring-destructive/20 focus:border-destructive"
+                            : "border-border focus:border-primary focus:ring-1 focus:ring-primary/20"
+                        }`}
                       />
+                      {linkError && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-xs text-destructive flex items-center gap-1.5 font-medium mt-1.5"
+                        >
+                          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                          <span>{linkError}</span>
+                        </motion.p>
+                      )}
                     </div>
                     <button
                       type="button"
@@ -1521,6 +1825,27 @@ function Analyze() {
             </motion.div>
           ) : (
             <>
+              {bannerError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-6 p-4 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive text-xs font-semibold flex items-start gap-2.5 shadow-sm"
+                >
+                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
+                  <div className="flex-1 leading-relaxed">{bannerError}</div>
+                </motion.div>
+              )}
+
+              <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-muted/50 border border-border/70 text-xs text-muted-foreground mb-6">
+                <span className="text-destructive font-black text-sm">*</span>
+                <span>
+                  {L(
+                    "Fields marked with an asterisk (*) are required to calculate campaign performance.",
+                    "الحقول المعلمة بالنجمة (*) إلزامية لحساب مؤشرات أداء الحملة."
+                  )}
+                </span>
+              </div>
+
               <div className="flex items-center gap-2 mb-8">
                 {stepLabels.map((label, i) => (
               <div key={label} className="flex-1 flex items-center gap-2">
@@ -1539,50 +1864,77 @@ function Analyze() {
 
           {postStep === 0 && (
             <Section title={t("step_campaign")}>
-              <Field label={t("campaignName")}>
+              <Field
+                label={t("campaignName")}
+                required
+                error={errors.name}
+                id="field-post-name"
+              >
                 <input
+                  id="input-post-name"
                   value={post.name}
                   onChange={(e) => setPo("name", e.target.value)}
-                  className={inputCls}
+                  className={`${inputCls} ${errors.name ? "border-destructive ring-2 ring-destructive/20 focus:border-destructive" : ""}`}
                   placeholder={t("campaignNamePh")}
                 />
               </Field>
-              <Field label={t("targetAudience")}>
-                <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field
+                  label={L("Target Location", "الموقع الجغرافي المستهدف")}
+                  required
+                  error={errors.location}
+                  id="field-post-location"
+                >
                   <input
-                    value={post.age}
-                    onChange={(e) => setPo("age", e.target.value)}
-                    placeholder={t("age")}
-                    className={inputCls}
-                  />
-                  <input
-                    value={post.gender}
-                    onChange={(e) => setPo("gender", e.target.value)}
-                    placeholder={t("gender")}
-                    className={inputCls}
-                  />
-                  <input
+                    id="input-post-location"
                     value={post.location}
                     onChange={(e) => setPo("location", e.target.value)}
                     placeholder={t("location")}
-                    className={inputCls}
+                    className={`${inputCls} ${errors.location ? "border-destructive ring-2 ring-destructive/20 focus:border-destructive" : ""}`}
                   />
-                </div>
-              </Field>
-              <Field label={t("duration")}>
+                </Field>
+                <Field label={L("Target Demographics (optional)", "الجمهور المستهدف (اختياري)")}>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      value={post.age}
+                      onChange={(e) => setPo("age", e.target.value)}
+                      placeholder={t("age")}
+                      className={inputCls}
+                    />
+                    <input
+                      value={post.gender}
+                      onChange={(e) => setPo("gender", e.target.value)}
+                      placeholder={t("gender")}
+                      className={inputCls}
+                    />
+                  </div>
+                </Field>
+              </div>
+              <Field
+                label={t("duration")}
+                required
+                error={errors.start || errors.end}
+                id="field-post-duration"
+              >
                 <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="date"
-                    value={post.start}
-                    onChange={(e) => setPo("start", e.target.value)}
-                    className={inputCls}
-                  />
-                  <input
-                    type="date"
-                    value={post.end}
-                    onChange={(e) => setPo("end", e.target.value)}
-                    className={inputCls}
-                  />
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-muted-foreground">{L("Start date", "تاريخ البدء")}</span>
+                    <input
+                      type="date"
+                      value={post.start}
+                      onChange={(e) => setPo("start", e.target.value)}
+                      className={`${inputCls} ${errors.start ? "border-destructive ring-2 ring-destructive/20 focus:border-destructive" : ""}`}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-muted-foreground">{L("End date", "تاريخ الانتهاء")}</span>
+                    <input
+                      type="date"
+                      value={post.end}
+                      onChange={(e) => setPo("end", e.target.value)}
+                      className={`${inputCls} ${errors.end ? "border-destructive ring-2 ring-destructive/20 focus:border-destructive" : ""}`}
+                    />
+                  </div>
                 </div>
               </Field>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1594,7 +1946,7 @@ function Analyze() {
                     placeholder="$"
                   />
                 </Field>
-                <Field label={L("Competitor reference / Page URL", "مرجع صفحة المنافس")}>
+                <Field label={L("Competitor reference / Page URL (optional)", "مرجع صفحة المنافس (اختياري)")}>
                   <input
                     value={post.competitor || ""}
                     onChange={(e) => setPo("competitor", e.target.value)}
@@ -1628,20 +1980,34 @@ function Analyze() {
 
           {postStep === 1 && (
             <Section title={t("step_platforms")}>
-              <Field label={t("platformsLabel")}>
-                <div className="grid grid-cols-3 gap-2">
+              <Field
+                label={t("platformsLabel")}
+                required
+                error={errors.platforms}
+                id="field-post-platforms"
+              >
+                <div
+                  className={`grid grid-cols-3 gap-2 p-1 rounded-xl transition ${
+                    errors.platforms ? "border border-destructive/80 ring-2 ring-destructive/20" : ""
+                  }`}
+                >
                   {platformsPost.map(({ id, label, Icon }) => (
                     <button
                       key={id}
+                      type="button"
                       onClick={() => togglePoPlat(id)}
-                      className={`p-4 rounded-xl border flex flex-col items-center gap-2 text-sm transition ${post.platforms.includes(id) ? "bg-primary/15 border-primary" : "bg-surface border-border"}`}
+                      className={`p-4 rounded-xl border flex flex-col items-center gap-2 text-sm transition cursor-pointer ${
+                        post.platforms.includes(id)
+                          ? "bg-primary/15 border-primary"
+                          : "bg-surface border-border hover:border-primary/50"
+                      }`}
                     >
                       <Icon className="h-5 w-5" /> {label}
                     </button>
                   ))}
                 </div>
               </Field>
-              <Field label={t("postUrl")}>
+              <Field label={L("Post URL (optional)", "رابط المنشور (اختياري)")}>
                 <input
                   value={post.postUrl}
                   onChange={(e) => setPo("postUrl", e.target.value)}
@@ -1752,39 +2118,64 @@ function Analyze() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                {metricFields.map(([k, lk]) => (
-                  <Field key={k} label={t(lk)}>
-                    <input
-                      value={post[k]}
-                      onChange={(e) => setPo(k, e.target.value)}
-                      className={inputCls}
-                    />
-                  </Field>
-                ))}
+                {metricFields.map(([k, lk]) => {
+                  const isViews = k === "views";
+                  return (
+                    <Field
+                      key={k}
+                      label={t(lk)}
+                      required={isViews}
+                      error={isViews ? errors.views : undefined}
+                      id={isViews ? "field-post-views" : undefined}
+                    >
+                      <input
+                        id={isViews ? "input-post-views" : undefined}
+                        value={post[k]}
+                        onChange={(e) => setPo(k, e.target.value)}
+                        className={`${inputCls} ${isViews && errors.views ? "border-destructive ring-2 ring-destructive/20 focus:border-destructive" : ""}`}
+                        placeholder={isViews ? L("e.g. 50000", "مثال: 50000") : "0"}
+                      />
+                    </Field>
+                  );
+                })}
               </div>
             </Section>
           )}
 
-          <div className="flex gap-3 mt-8">
+          {bannerError && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 p-4 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive text-xs font-semibold flex items-start gap-2.5 shadow-sm"
+            >
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
+              <div className="flex-1 leading-relaxed">{bannerError}</div>
+            </motion.div>
+          )}
+
+          <div className="flex gap-3 mt-6">
             {postStep > 0 && (
               <button
+                type="button"
                 onClick={() => setPostStep(postStep - 1)}
-                className="flex-1 py-3.5 rounded-2xl border border-border bg-surface font-medium hover:bg-surface-elevated transition"
+                className="flex-1 py-3.5 rounded-2xl border border-border bg-surface font-medium hover:bg-surface-elevated transition cursor-pointer"
               >
                 {t("back")}
               </button>
             )}
             {postStep < lastStep ? (
               <button
-                onClick={() => setPostStep(postStep + 1)}
-                className="flex-1 gradient-primary text-primary-foreground py-3.5 rounded-2xl font-semibold glow-ring flex items-center justify-center gap-2"
+                type="button"
+                onClick={handleNextPostStep}
+                className="flex-1 gradient-primary text-primary-foreground py-3.5 rounded-2xl font-semibold glow-ring flex items-center justify-center gap-2 cursor-pointer hover:opacity-95 shadow-md transition"
               >
                 {t("continue")} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
               </button>
             ) : (
               <button
+                type="button"
                 onClick={submitPost}
-                className="flex-1 gradient-primary text-primary-foreground py-3.5 rounded-2xl font-semibold glow-ring"
+                className="flex-1 gradient-primary text-primary-foreground py-3.5 rounded-2xl font-semibold glow-ring cursor-pointer hover:opacity-95 shadow-md transition"
               >
                 {t("submit")}
               </button>
@@ -1811,12 +2202,48 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     </div>
   );
 }
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  required,
+  error,
+  id,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  error?: string;
+  id?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <label className="block">
-      <span className="block text-xs text-muted-foreground mb-1.5 font-medium">{label}</span>
-      {children}
-    </label>
+    <div id={id} className="block space-y-1.5 transition-all text-start">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-semibold text-foreground flex items-center gap-1.5 cursor-pointer">
+          <span>{label}</span>
+          {required && (
+            <span className="text-destructive font-black text-sm leading-none" title="Required / إلزامي">
+              *
+            </span>
+          )}
+        </label>
+        {required && (
+          <span className="text-[10px] text-destructive/90 font-medium bg-destructive/10 px-2 py-0.5 rounded border border-destructive/20">
+            * Required
+          </span>
+        )}
+      </div>
+      <div>{children}</div>
+      {error && (
+        <motion.p
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-xs text-destructive flex items-center gap-1.5 font-medium mt-1"
+        >
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+          <span>{error}</span>
+        </motion.p>
+      )}
+    </div>
   );
 }
 function Pill({

@@ -17,13 +17,43 @@ const steps: { Icon: any; key: TKey }[] = [
 ];
 
 function Analyzing() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const nav = useNavigate();
   const [pct, setPct] = useState(0);
   const [step, setStep] = useState(0);
 
   useEffect(() => {
-    const total = 8000;
+    // Validate campaign data: do not analyze if empty
+    const rawCamp = sessionStorage.getItem("pi-campaign");
+    if (!rawCamp) {
+      sessionStorage.setItem(
+        "pi-form-error",
+        lang === "ar"
+          ? "يرجى تعبئة الحقول الإلزامية للحملة قبل بدء التحليل."
+          : "Please fill in the required campaign fields before running the analysis."
+      );
+      nav({ to: "/analyze" });
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(rawCamp);
+      if (!parsed || !parsed.name || !parsed.name.trim()) {
+        sessionStorage.setItem(
+          "pi-form-error",
+          lang === "ar"
+            ? "اسم الحملة والحقول الإلزامية مطلوبة ولا يمكن أن تكون فارغة."
+            : "Campaign name and required fields cannot be empty."
+        );
+        nav({ to: "/analyze" });
+        return;
+      }
+    } catch {
+      nav({ to: "/analyze" });
+      return;
+    }
+
+    const total = 5000;
     const tick = 80;
     let elapsed = 0;
     const id = setInterval(() => {
@@ -37,7 +67,7 @@ function Analyzing() {
       }
     }, tick);
     return () => clearInterval(id);
-  }, [nav]);
+  }, [nav, lang]);
 
   return (
     <div className="min-h-screen grid place-items-center px-6 relative overflow-hidden">

@@ -95,13 +95,42 @@ function Results() {
   const [abResult, setAbResult] = useState<any>(null);
 
   useEffect(() => {
+    const raw = sessionStorage.getItem("pi-campaign");
+    if (!raw) {
+      sessionStorage.setItem(
+        "pi-form-error",
+        lang === "ar"
+          ? "يرجى إكمال تفاصيل الحملة قبل استعراض النتائج."
+          : "Please complete the campaign details before viewing results."
+      );
+      nav({ to: "/analyze" });
+      return;
+    }
+
+    let campaignObj: any = null;
+    try {
+      campaignObj = JSON.parse(raw);
+    } catch {
+      nav({ to: "/analyze" });
+      return;
+    }
+
+    const name = campaignObj?.name?.trim();
+    if (!name) {
+      sessionStorage.setItem(
+        "pi-form-error",
+        lang === "ar"
+          ? "الحقول الإلزامية فارغة، يرجى ملء بيانات الحملة أولاً."
+          : "Required fields are empty. Please fill in campaign details first."
+      );
+      nav({ to: "/analyze" });
+      return;
+    }
+
     const rawMode = sessionStorage.getItem("pi-campaignMode");
     const preMode = rawMode === "pre";
     setIsPreLaunch(preMode);
 
-    const raw = sessionStorage.getItem("pi-campaign");
-    const campaignObj = raw ? JSON.parse(raw) : null;
-    const name = campaignObj?.name || "";
     const r = generateMockAnalysis(name, campaignObj, preMode, lang === "ar");
     setResult(r);
     sessionStorage.setItem("pi-result", JSON.stringify(r));
