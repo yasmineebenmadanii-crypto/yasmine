@@ -70,6 +70,154 @@ function get30DayDates() {
   return { start: formatDate(start), end: formatDate(end) };
 }
 
+function getPreLaunchCampaignPreset(language: string) {
+  switch (language) {
+    case "ar":
+      return {
+        name: "مدينتنا مسؤوليتنا",
+        type: ["awareness", "social"],
+        organizer: "جمعية محلية بالتعاون مع البلدية",
+        description:
+          "حملة توعوية للحفاظ على نظافة الأحياء والأماكن العامة - حملة رقمية وميدانية تهدف إلى تشجيع المواطنين، خاصة الشباب، على المحافظة على نظافة الأحياء وعدم رمي النفايات في الأماكن العامة، مع تعزيز الشعور بالمسؤولية تجاه المدينة.",
+        objectives:
+          "• رفع الوعي بأهمية المحافظة على نظافة المحيط.\n• تشجيع المواطنين على عدم رمي النفايات عشوائيًا.\n• زيادة مشاركة الشباب في المبادرات التطوعية.\n• تعزيز المسؤولية الجماعية تجاه المدينة.",
+        age: "16-40",
+        gender: "both",
+        location: "سطيف، الجزائر",
+        education: "ثانوي، جامعي وما بعد الجامعي",
+        interests: "البيئة، التطوع، المبادرات الشبابية، الحياة المجتمعية، تحسين المدينة",
+        message: "نظافة حومتك تبدأ منك.",
+        slogans: "حومتنا مسؤوليتنا، نقيها اليوم، تعيش فيها غدوة، مدينتنا أجمل بينا",
+        platforms: ["facebook", "instagram", "tiktok"],
+        durationValue: "21",
+        durationUnit: "days" as const,
+        budget: "300000",
+        contentTypes: ["video", "design", "image", "text"],
+        dialect: "algerian",
+      };
+
+    case "fr":
+      return {
+        name: "Notre Ville, Notre Responsabilité (مدينتنا مسؤوليتنا)",
+        type: ["awareness", "social"],
+        organizer: "Association locale en partenariat avec la commune",
+        description:
+          "Campagne de sensibilisation pour la propreté des quartiers et des espaces publics - initiative numérique et de terrain visant à encourager les citoyens, en particulier les jeunes, à préserver la propreté des quartiers et à éliminer les dépôts sauvages.",
+        objectives:
+          "• Sensibiliser à l'importance de préserver la propreté de l'environnement.\n• Inciter les citoyens à ne pas jeter les ordures de manière anarchique.\n• Accroître la participation des jeunes aux initiatives de bénévolat.\n• Renforcer la responsabilité collective envers la ville.",
+        age: "16-40",
+        gender: "both",
+        location: "Sétif, Algérie",
+        education: "Secondaire, universitaire et supérieur",
+        interests: "Environnement, bénévolat, initiatives citoyennes des jeunes, vie communautaire, embellissement urbain",
+        message: "La propreté de votre quartier commence par vous. (نظافة حومتك تبدأ منك)",
+        slogans: "Notre quartier notre responsabilité, Nettoie-le aujourd'hui pour mieux vivre demain, Notre ville est plus belle avec nous",
+        platforms: ["facebook", "instagram", "tiktok"],
+        durationValue: "21",
+        durationUnit: "days" as const,
+        budget: "300000",
+        contentTypes: ["video", "design", "image", "text"],
+        dialect: "algerian",
+      };
+
+    case "es":
+      return {
+        name: "Nuestra Ciudad, Nuestra Responsabilidad (مدينتنا مسؤوليتنا)",
+        type: ["awareness", "social"],
+        organizer: "Asociación local en colaboración con el municipio",
+        description:
+          "Campaña de concienciación para la limpieza de barrios y espacios públicos - iniciativa digital y comunitaria para motivar a la ciudadanía, en especial a la juventud, a cuidar su entorno urbano.",
+        objectives:
+          "• Crear conciencia sobre la importancia de mantener limpio el entorno.\n• Fomentar que los ciudadanos no arrojen basura indiscriminadamente.\n• Incrementar la participación juvenil en brigadas de voluntariado.\n• Consolidar la responsabilidad cívica compartida hacia la ciudad.",
+        age: "16-40",
+        gender: "both",
+        location: "Sétif, Argelia",
+        education: "Secundaria, universitaria y posgrado",
+        interests: "Medio ambiente, voluntariado, iniciativas juveniles, vida comunitaria, mejora urbana",
+        message: "La limpieza de tu barrio empieza por ti. (نظافة حومتك تبدأ منك)",
+        slogans: "Nuestro barrio nuestra responsabilidad, Límpialo hoy para vivir mejor mañana, Nuestra ciudad es más hermosa juntos",
+        platforms: ["facebook", "instagram", "tiktok"],
+        durationValue: "21",
+        durationUnit: "days" as const,
+        budget: "300000",
+        contentTypes: ["video", "design", "image", "text"],
+        dialect: "algerian",
+      };
+
+    case "de":
+      return {
+        name: "Unsere Stadt, Unsere Verantwortung (مدينتنا مسؤوليتنا)",
+        type: ["awareness", "social"],
+        organizer: "Lokale Bürgerinitiative in Zusammenarbeit mit der Stadtverwaltung",
+        description:
+          "Aufklärungskampagne für die Sauberkeit von Nachbarschaften und öffentlichen Plätzen - digitale und bürgernahe Initiative zur Förderung des Engagements junger Menschen für ihre Stadt.",
+        objectives:
+          "• Bewusstsein für die Bedeutung einer sauberen Umwelt schärfen.\n• Bürger dazu anhalten, Abfälle nicht wild im öffentlichen Raum zu entsorgen.\n• Engagement von Jugendlichen in ehrenamtlichen Aktionen steigern.\n• Gemeinschaftliche Verantwortung für die Stadt festigen.",
+        age: "16-40",
+        gender: "both",
+        location: "Sétif, Algerien",
+        education: "Gymnasium, Hochschule und postgraduale Bildung",
+        interests: "Umweltschutz, Ehrenamt, Jugendinitiativen, Gemeinschaftsleben, Stadtverschönerung",
+        message: "Die Sauberkeit deines Viertels beginnt bei dir. (نظافة حومتك تبدأ منك)",
+        slogans: "Unser Viertel unsere Verantwortung, Heute reinigen morgen besser leben, Gemeinsam ist unsere Stadt schöner",
+        platforms: ["facebook", "instagram", "tiktok"],
+        durationValue: "21",
+        durationUnit: "days" as const,
+        budget: "300000",
+        contentTypes: ["video", "design", "image", "text"],
+        dialect: "algerian",
+      };
+
+    case "zh":
+      return {
+        name: "我们的城市，我们的责任 (مدينتنا مسؤوليتنا)",
+        type: ["awareness", "social"],
+        organizer: "塞提夫本地协会与市政当局联合主办",
+        description:
+          "维护社区和公共场所卫生的宣教活动 - 结合线上与线下的倡议行动，鼓励市民特别是青年爱护社区环境，杜绝在公共区域乱扔垃圾，培养城市主人翁意识。",
+        objectives:
+          "• 提高公众对保护周边环境整洁的重视度。\n• 引导市民自觉遵守公共卫生准则，杜绝随意丢弃垃圾。\n• 激发青年参与社区志愿清洁行动的热情。\n• 凝聚全民共建美好家园的集体责任感。",
+        age: "16-40",
+        gender: "both",
+        location: "阿尔及利亚 塞提夫",
+        education: "高中、大学及以上学历",
+        interests: "环境保护、志愿服务、青年倡议、社区生活、城市美化",
+        message: "社区的整洁，从你我做起。(نظافة حومتك تبدأ منك)",
+        slogans: "社区是我们的责任，今天搞好清洁明天美好生活，有你我城市更美好",
+        platforms: ["facebook", "instagram", "tiktok"],
+        durationValue: "21",
+        durationUnit: "days" as const,
+        budget: "300000",
+        contentTypes: ["video", "design", "image", "text"],
+        dialect: "algerian",
+      };
+
+    default: // "en"
+      return {
+        name: "Our City, Our Responsibility (مدينتنا مسؤوليتنا)",
+        type: ["awareness", "social"],
+        organizer: "Local community association in cooperation with the municipality",
+        description:
+          "Awareness campaign to keep neighborhoods and public spaces clean - A digital and on-the-ground campaign aimed at encouraging citizens, especially youth, to maintain neighborhood cleanliness, avoid littering in public places, and foster collective responsibility for the city.",
+        objectives:
+          "• Raise awareness on the vital importance of maintaining environmental cleanliness.\n• Encourage citizens to refrain from random littering.\n• Boost youth participation in community volunteer initiatives.\n• Strengthen collective civic responsibility for the city.",
+        age: "16-40",
+        gender: "both",
+        location: "Setif, Algeria",
+        education: "Secondary, University and Postgraduate",
+        interests: "Environment, volunteering, youth initiatives, community life, city improvement",
+        message: "The cleanliness of your neighborhood starts with you. (نظافة حومتك تبدأ منك)",
+        slogans: "Our neighborhood is our responsibility, Clean it today live well tomorrow, Our city is more beautiful together",
+        platforms: ["facebook", "instagram", "tiktok"],
+        durationValue: "21",
+        durationUnit: "days" as const,
+        budget: "300000",
+        contentTypes: ["video", "design", "image", "text"],
+        dialect: "algerian",
+      };
+  }
+}
+
 function getHealthCampaignPreset(language: string) {
   const { start, end } = get30DayDates();
 
@@ -667,16 +815,22 @@ function Analyze() {
   };
 
   const handleAutoFillPre = () => {
-    const preset = getHealthCampaignPreset(lang).pre;
+    const preset = getPreLaunchCampaignPreset(lang);
     setPre(preset);
     setErrors({});
     setBannerError(null);
     setAutoFillSuccess(
       lang === "ar"
-        ? "تمت تعبئة بيانات الحملة الصحية بنجاح! (صحتك تبدأ منك - سطيف)"
+        ? "تمت تعبئة بيانات حملة «مدينتنا مسؤوليتنا» بنجاح! (سطيف • 300,000 دج • 21 يوماً)"
         : lang === "fr"
-          ? "Données de la campagne « Votre santé commence par vous (Sétif) » renseignées avec succès !"
-          : "Health campaign details ('Your Health Starts with You - Setif') auto-filled successfully!"
+          ? "Données de la campagne « Notre Ville, Notre Responsabilité (Sétif) » renseignées avec succès !"
+          : lang === "es"
+            ? "¡Datos de la campaña «Nuestra Ciudad, Nuestra Responsabilidad (Sétif)» rellenados con éxito!"
+            : lang === "de"
+              ? "Daten der Kampagne „Unsere Stadt, Unsere Verantwortung (Sétif)“ erfolgreich ausgefüllt!"
+              : lang === "zh"
+                ? "已成功自动填充宣传活动“我们的城市，我们的责任 (塞提夫)”的数据！"
+                : "Pre-launch campaign details ('Our City, Our Responsibility - Setif') auto-filled successfully!"
     );
     setTimeout(() => {
       setAutoFillSuccess(null);
@@ -943,21 +1097,21 @@ function Analyze() {
             <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-primary/10 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
-                  <HeartPulse className="h-5 w-5 animate-pulse" />
+                  <Sparkles className="h-5 w-5 animate-pulse" />
                 </div>
                 <div className="text-start">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h4 className="font-bold text-xs text-foreground">
-                      {L("Auto-Fill Health Campaign Preset", "تعبئة تلقائية لبيانات الحملة الصحية")}
+                      {L("Auto-Fill Pre-Launch Campaign Preset", "تعبئة تلقائية لمثال حملة قبل الإطلاق")}
                     </h4>
                     <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                      {lang === "ar" ? "صحتك تبدأ منك" : "Health Campaign (صحتك تبدأ منك)"}
+                      {lang === "ar" ? "مدينتنا مسؤوليتنا (نظافة الأحياء)" : "Our City, Our Responsibility (مدينتنا مسؤوليتنا)"}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
                     {L(
-                      "Setif, Algeria • 18-35 years • 30 days • 100,000 DZD • Algerian Dialect",
-                      "سطيف، الجزائر • 18-35 سنة • 30 يوماً • 100,000 دج • دارجة وعربية فصحى"
+                      "Setif, Algeria • 16-40 years • 21 days • 300,000 DZD • Facebook, Instagram, TikTok",
+                      "سطيف، الجزائر • 16–40 سنة • 21 يوماً • 300,000 دج • فيسبوك، إنستغرام، تيك توك"
                     )}
                   </p>
                 </div>

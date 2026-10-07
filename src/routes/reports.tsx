@@ -38,6 +38,7 @@ import {
   Copy,
   ExternalLink,
   BarChart2,
+  Download,
 } from "lucide-react";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { generateCampaignReport } from "@/lib/api/gemini.functions";
@@ -905,61 +906,38 @@ function Reports() {
     });
   }, [campaigns, searchQuery, filterUserType, filterMode, filterScore]);
 
-  // Export selected campaign as TXT file
-  const handleDownloadReport = (record: CampaignHistoryRecord) => {
-    const content = `========================================================
-PUBLIC INSIGHT - CAMPAIGN REPORT LOG
-========================================================
-Campaign Name: ${record.name}
-User Type: ${record.userType === "org" ? "Organization" : "Individual User"}
-Analysis Date: ${record.date}
-Mode: ${record.mode === "pre" ? "PRE-LAUNCH SIMULATION" : "POST-LAUNCH ANALYTICS"}
-Overall Success Score: ${record.score}/100
-Engagement Rate: ${record.engagementRate}%
-Dialect Target: ${record.dialect.toUpperCase()}
-Total Budget: $${parseFloat(record.budget).toLocaleString()}
+  const [pdfSuccessMsg, setPdfSuccessMsg] = useState<string | null>(null);
+  const [downloadModal, setDownloadModal] = useState<{
+    url: string;
+    fileName: string;
+    campaignName: string;
+  } | null>(null);
 
---------------------------------------------------------
-ESTIMATED PERFORMANCE METRICS
---------------------------------------------------------
-Views: ${Intl.NumberFormat().format(record.metrics.views)}
-Likes: ${Intl.NumberFormat().format(record.metrics.likes)}
-Comments: ${Intl.NumberFormat().format(record.metrics.comments)}
-Shares: ${Intl.NumberFormat().format(record.metrics.shares)}
-
---------------------------------------------------------
-AI RECONSTRUCTED EXECUTIVE SUMMARY
---------------------------------------------------------
-${record.aiReport?.reportDescription || "No cached summary description found."}
-
---------------------------------------------------------
-STRENGTHS & SUCCESS FACTORS
---------------------------------------------------------
-${(record.aiReport?.strengths || record.resultObj?.strengths || []).map((s: string, i: number) => `${i + 1}. ${s}`).join("\n")}
-
---------------------------------------------------------
-RISKS & CAUSES OF FAILURE (Worst-Case)
---------------------------------------------------------
-${(record.aiReport?.weaknesses || record.resultObj?.weaknesses || []).map((w: string, i: number) => `${i + 1}. ${w}`).join("\n")}
-
---------------------------------------------------------
-ACTIONABLE STRATEGIC RECOMMENDATIONS
---------------------------------------------------------
-${(record.aiReport?.recommendations || record.resultObj?.recommendations || []).map((r: any, i: number) => `${i + 1}. ${r.title}: ${r.detail}`).join("\n")}
-
-========================================================
-Generated dynamically by Public Insight AI System
-`;
-
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${record.name.replace(/\s+/g, "_")}_insight_report.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  // Export selected campaign as real certified PDF file
+  const handleDownloadReport = async (record: CampaignHistoryRecord) => {
+    if (pdfLoading) return;
+    setPdfLoading(true);
+    setPdfSuccessMsg(null);
+    try {
+      const result = await exportCampaignToPDF(record, lang === "ar" ? "ar" : "en");
+      if (result && result.blobUrl) {
+        setDownloadModal({
+          url: result.blobUrl,
+          fileName: result.fileName,
+          campaignName: record.name,
+        });
+      }
+      setPdfSuccessMsg(
+        lang === "ar"
+          ? `تم تجهيز وتنزيل تقرير PDF للحملة «${record.name}» بنجاح على جهازك!`
+          : `PDF report for "${record.name}" downloaded successfully to your device!`
+      );
+      setTimeout(() => setPdfSuccessMsg(null), 6000);
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   // Pre-formatted Fallbacks if some fields missing on AI endpoints
@@ -994,6 +972,17 @@ Generated dynamically by Public Insight AI System
 
   return (
     <AppShell title={t("reports")}>
+      {pdfSuccessMsg && (
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          className="mb-4 p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 shadow-sm no-print"
+        >
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <span>{pdfSuccessMsg}</span>
+        </motion.div>
+      )}
       {activeTab === "history" ? (
         <div className="space-y-6 pb-16 text-start">
           {/* Header */}
@@ -1265,11 +1254,22 @@ Generated dynamically by Public Insight AI System
                           {c.score}/100
                         </span>
 
-                        <div className="flex gap-1">
+                        <div className="flex gap-1.5 items-center">
+                          <button
+                            title={L("Download Official PDF Report", "تنزيل تقرير PDF الرسمي")}
+                            disabled={pdfLoading}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownloadReport(c);
+                            }}
+                            className="p-1.5 rounded-lg border border-primary/40 hover:border-primary text-primary hover:bg-primary/10 transition disabled:opacity-50 cursor-pointer"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                          </button>
                           <button
                             title={L("Delete from history log", "مسح السجل نهائياً")}
                             onClick={(e) => handleDelete(c.id, e)}
-                            className="p-1.5 rounded-lg border border-border hover:border-destructive text-muted-foreground hover:text-destructive transition"
+                            className="p-1.5 rounded-lg border border-border hover:border-destructive text-muted-foreground hover:text-destructive transition cursor-pointer"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -1305,16 +1305,8 @@ Generated dynamically by Public Insight AI System
             <div className="flex gap-2">
               <button
                 disabled={pdfLoading}
-                onClick={async () => {
-                  if (!selectedCampaign || pdfLoading) return;
-                  setPdfLoading(true);
-                  try {
-                    await exportCampaignToPDF(selectedCampaign, lang as "ar" | "en");
-                  } catch (err) {
-                    console.error("PDF generation failed:", err);
-                  } finally {
-                    setPdfLoading(false);
-                  }
+                onClick={() => {
+                  if (selectedCampaign) handleDownloadReport(selectedCampaign);
                 }}
                 className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition bg-surface-elevated/40 hover:bg-surface-elevated px-3 py-1.5 rounded-lg border border-border/40 cursor-pointer disabled:opacity-50"
               >
@@ -2079,6 +2071,48 @@ Generated dynamically by Public Insight AI System
           )}
         </motion.div>
       )}
+
+      {/* Direct One-Click Download Modal/Toast */}
+      <AnimatePresence>
+        {downloadModal && (
+          <motion.div
+            initial={{ opacity: 0, y: 25, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 25, scale: 0.95 }}
+            className="fixed bottom-6 right-6 z-50 max-w-sm sm:max-w-md w-[calc(100vw-3rem)] p-4 rounded-2xl bg-surface border-2 border-primary/50 shadow-2xl flex flex-col gap-3 backdrop-blur-md no-print"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-foreground font-bold text-sm">
+                <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                <span>{L("PDF Report Ready!", "تقرير الـ PDF جاهز للتحميل!")}</span>
+              </div>
+              <button
+                onClick={() => setDownloadModal(null)}
+                className="text-muted-foreground hover:text-foreground text-xs p-1 rounded-lg hover:bg-surface-elevated transition"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {L(
+                `Your certified PDF report for "${downloadModal.campaignName}" is ready. If your browser blocked automatic saving, click below to save directly:`,
+                `تم إعداد التقرير الرسمي للحملة «${downloadModal.campaignName}». إذا لم يبدأ التنزيل تلقائياً على جهازك، انقر على الزر أدناه لحفظه مباشرة:`
+              )}
+            </p>
+            <div className="flex items-center gap-2 pt-1">
+              <a
+                href={downloadModal.url}
+                download={downloadModal.fileName}
+                onClick={() => setTimeout(() => setDownloadModal(null), 3500)}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-primary text-white text-xs font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition shadow-md cursor-pointer"
+              >
+                <Download className="h-4 w-4" />
+                <span>{L("Save PDF File to PC Now", "احفظ ملف الـ PDF على جهازك الآن")}</span>
+              </a>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AppShell>
   );
 }
